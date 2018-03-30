@@ -1,11 +1,10 @@
 package be.samclercky.gamepadrobot.robot
 
-import java.awt.AWTKeyStroke
+import be.samclercky.gamepadrobot.GameData
 import java.awt.MouseInfo
 import java.awt.Robot
 import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
-import javax.swing.KeyStroke
 
 class Robot {
     val robot = Robot()
@@ -53,6 +52,13 @@ class Robot {
             println("Illegal argument: could not write keyCode: $key")
         }
     }
+    fun isMouseMovement(key: Key): Boolean {
+        when(key) {
+            Key.MOUSEMOVEX -> return true
+            Key.MOUSEMOVEY -> return true
+            else -> return false
+        }
+    }
     fun mouseMove(dx: Int, dy: Int) {
         val cPosition = MouseInfo.getPointerInfo().location
         try {
@@ -60,6 +66,14 @@ class Robot {
             robot.mouseMove(cPosition.x + dx, cPosition.y + dy)
         } catch (ex: Exception) {
             println("Couldn't move mouse with these arguments: dx:$dx; dy:$dy")
+        }
+    }
+    fun mouseMove(gameData: GameData) {
+        if (isMouseMovement(gameData.key)) {
+            when (gameData.key) {
+                Key.MOUSEMOVEX -> mouseMove((gameData.value * gameData.multiplyer).toInt(), 0)
+                Key.MOUSEMOVEY -> mouseMove(0, (gameData.value * gameData.multiplyer).toInt())
+            }
         }
     }
 
@@ -104,12 +118,29 @@ class Robot {
             Key.F9 -> return KeyEvent.VK_9
             Key.F0 -> return KeyEvent.VK_0
             Key.SPACE -> return KeyEvent.VK_SPACE
+            Key.ESC -> return KeyEvent.VK_ESCAPE
             else -> return KeyEvent.VK_UNDEFINED
+        }
+    }
+
+    fun isClick(key: Key): Boolean {
+        when(key) {
+            Key.MOUSELEFT -> return true
+            Key.MOUSERIGHT -> return true
+            else -> return false
+        }
+    }
+    fun click(key: Key) {
+        if (isClick(key)) {
+            when(key) {
+                Key.MOUSERIGHT -> leftClick()
+                Key.MOUSERIGHT -> rightClick()
+            }
         }
     }
 }
 
 enum class Key {
-    MOUSEMOVE, A, Z, E, R, T, Y, U, I, O, P, Q, S, D, F, G, H, J, K, L, M, W, X, C, V, B, N, SHIFT, CONTROL, F1, F2, F3, F4, F5, F6, F7, F8, F9, F0, SPACE,
-    MOUSELEFT, MOUSERIGHT, NOTHING
+    MOUSEMOVEX, MOUSEMOVEY, A, Z, E, R, T, Y, U, I, O, P, Q, S, D, F, G, H, J, K, L, M, W, X, C, V, B, N, SHIFT, CONTROL, F1, F2, F3, F4, F5, F6, F7, F8, F9, F0, SPACE,
+    MOUSELEFT, MOUSERIGHT, ESC, NOTHING
 }
