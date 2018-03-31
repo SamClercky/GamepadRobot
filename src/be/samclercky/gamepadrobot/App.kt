@@ -47,6 +47,7 @@ class App: JFrame() {
                     val gameEvent = GameEvent(comp.isAnalog(), event.value, comp.name)
                     mapToMovement(gameEvent)
                 }
+                robot.updateMouse()
             }
         }
     }
@@ -114,7 +115,7 @@ class App: JFrame() {
         if (robot.isClick(gameData.key)) {
             robot.click(gameData.key)
         } else if (robot.isMouseMovement(gameData.key)) {
-            robot.mouseMove(gameData)
+            robot.pushMouseMovement(gameData)
         } else {
             if (gameData.value == 0f) {
                 robot.keyRelease(robot.KeyToKeyEvent(gameData.key))

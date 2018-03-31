@@ -8,6 +8,7 @@ import java.awt.event.KeyEvent
 
 class Robot {
     val robot = Robot()
+    val movingMouse = mutableListOf<GameData>()
 
     init {
         robot.autoDelay = 40
@@ -15,15 +16,15 @@ class Robot {
     }
     fun leftClick() {
         robot.mousePress(InputEvent.BUTTON1_MASK)
-        robot.delay(200)
+        robot.delay(40)
         robot.mouseRelease(InputEvent.BUTTON1_MASK)
-        robot.delay(200)
+        robot.delay(40)
     }
     fun rightClick() {
-        robot.mousePress(InputEvent.BUTTON2_MASK)
-        robot.delay(200)
-        robot.mouseRelease(InputEvent.BUTTON2_MASK)
-        robot.delay(200)
+        robot.mousePress(InputEvent.BUTTON3_MASK)
+        robot.delay(40)
+        robot.mouseRelease(InputEvent.BUTTON3_MASK)
+        robot.delay(40)
     }
     fun type(str: String) {
         for (character in str) {
@@ -74,6 +75,26 @@ class Robot {
                 Key.MOUSEMOVEX -> mouseMove((gameData.value * gameData.multiplyer).toInt(), 0)
                 Key.MOUSEMOVEY -> mouseMove(0, (gameData.value * gameData.multiplyer).toInt())
             }
+        }
+    }
+    fun pushMouseMovement(gameData: GameData) {
+        for (data in movingMouse) {
+            if (data.key == gameData.key) {
+                if (gameData.value == 0f) {
+                    movingMouse.remove(data)
+                } else {
+                    movingMouse.remove(data)
+                    movingMouse.add(gameData)
+                }
+                return // done
+            }
+        }
+        movingMouse.add(gameData) // not yet in movingMouse -> adding now
+    }
+    fun updateMouse() {
+        for (data in movingMouse) {
+            mouseMove(data)
+            println("mouse updated")
         }
     }
 
@@ -133,8 +154,8 @@ class Robot {
     fun click(key: Key) {
         if (isClick(key)) {
             when(key) {
-                Key.MOUSERIGHT -> leftClick()
                 Key.MOUSERIGHT -> rightClick()
+                Key.MOUSELEFT -> leftClick()
             }
         }
     }

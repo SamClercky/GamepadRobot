@@ -5,7 +5,7 @@ import be.samclercky.gamepadrobot.robot.Key
 // TODO: should be replaced later to JSON
 class MinecraftGamepad {
 
-    val mouseSensitvity: Float = 10f
+    val mouseSensitvity: Float = 50f
 
     fun getCode(btn: String): Key {
         when(btn) {
