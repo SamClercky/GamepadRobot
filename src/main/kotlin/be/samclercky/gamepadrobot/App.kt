@@ -2,8 +2,6 @@ package be.samclercky.gamepadrobot
 
 import be.samclercky.gamepadrobot.robot.Key
 import be.samclercky.gamepadrobot.robot.Robot
-import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.launch
 import net.java.games.input.Controller
 import net.java.games.input.ControllerEnvironment
 import net.java.games.input.ControllerEvent

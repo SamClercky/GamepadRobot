@@ -1,0 +1,46 @@
+buildscript {
+    ext.kotlin_version = '1.2.31'
+    ext.lwjgl_version = '3.0.0'
+    ext.gradle_native_version = "0.3.1"
+
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "gradle.plugin.com.stehno:gradle-natives:$gradle_native_version"
+    }
+}
+
+group 'be.samclercky'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'kotlin'
+apply plugin: "com.stehno.natives"
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile "org.lwjgl:lwjgl:$lwjgl_version"
+    compile "org.lwjgl:lwjgl-platform:$lwjgl_version:natives-windows"
+    compile "org.lwjgl:lwjgl-platform:$lwjgl_version:natives-linux"
+    compile "org.lwjgl:lwjgl-platform:$lwjgl_version:natives-osx"
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
