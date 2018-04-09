@@ -2,15 +2,11 @@ package be.samclercky.gamepadrobot
 
 import be.samclercky.gamepadrobot.robot.Key
 import be.samclercky.gamepadrobot.robot.Robot
-import net.java.games.input.Controller
-import net.java.games.input.ControllerEnvironment
-import net.java.games.input.ControllerEvent
-import net.java.games.input.Event
 import javax.swing.JFrame
 
 class App: JFrame() {
 
-    val minecraftGamepad = MinecraftGamepad()
+    /*val minecraftGamepad = MinecraftGamepad()
     val robot = Robot()
     val passedUnMappedBtn = Array<PassedUnMappedBtn>(minecraftGamepad.getUnMappedBtn().size, {
         PassedUnMappedBtn(minecraftGamepad.getUnMappedBtn()[it], false, "")
@@ -121,7 +117,7 @@ class App: JFrame() {
                 robot.keyPress(robot.KeyToKeyEvent(gameData.key))
             }
         }
-    }
+    }*/
 }
 
 data class GameEvent(val analog: Boolean, val value: Float, val btn: String)

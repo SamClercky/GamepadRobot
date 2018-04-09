@@ -1,6 +1,6 @@
 buildscript {
     ext.kotlin_version = '1.2.31'
-    ext.lwjgl_version = '3.0.0'
+    ext.lwjgl_version = '3.1.6'
     ext.gradle_native_version = "0.3.1"
 
     repositories {
@@ -33,9 +33,14 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     testCompile group: 'junit', name: 'junit', version: '4.12'
     compile "org.lwjgl:lwjgl:$lwjgl_version"
-    compile "org.lwjgl:lwjgl-platform:$lwjgl_version:natives-windows"
-    compile "org.lwjgl:lwjgl-platform:$lwjgl_version:natives-linux"
-    compile "org.lwjgl:lwjgl-platform:$lwjgl_version:natives-osx"
+    compile "org.lwjgl:lwjgl:$lwjgl_version:natives-windows"
+    compile "org.lwjgl:lwjgl:$lwjgl_version:natives-linux"
+    compile "org.lwjgl:lwjgl:$lwjgl_version:natives-macos"
+    compile "org.lwjgl:lwjgl-glfw:$lwjgl_version"
+    compile "org.lwjgl:lwjgl-glfw:$lwjgl_version:natives-windows"
+    compile "org.lwjgl:lwjgl-glfw:$lwjgl_version:natives-linux"
+    compile "org.lwjgl:lwjgl-glfw:$lwjgl_version:natives-macos"
+    compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.22.5'
 }
 
 compileKotlin {
