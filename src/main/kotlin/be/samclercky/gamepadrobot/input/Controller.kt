@@ -7,6 +7,8 @@ import be.samclercky.gamepadrobot.utils.iterator
 import java.nio.ByteBuffer
 
 class Controller {
+    private var working = false
+
     val joysticks = arrayOf(
             GLFW_JOYSTICK_1,
             GLFW_JOYSTICK_2,
@@ -55,7 +57,6 @@ class Controller {
         get() {
             for (joystick in joysticks) {
                 val name = glfwJoystickPresent(joystick)
-                println(name)
                 if (name != null) {
                     return joystick
                 }
@@ -68,6 +69,15 @@ class Controller {
             throw IllegalStateException("GLFW couldn't be initialized")
         }
         glfwPollEvents()
+
+        working = true
+
+        Runtime.getRuntime().addShutdownHook(Thread {
+            if (working) {
+                destroy()
+                working = false
+            }
+        })
     }
 
     /**

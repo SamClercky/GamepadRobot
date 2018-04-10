@@ -6,19 +6,19 @@ import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.runBlocking
 
 fun main(args: Array<String>) = runBlocking<Unit> {
-    App()
-
-    val c = Controller()
-
-    Runtime.getRuntime().addShutdownHook(Thread {
-        c.destroy()
-    })
-
-    while (true) {
-        for (i in c.pollData()) {
-            print("$i, ")
+    forloop@ for (arg in args) {
+        println(arg)
+        when(arg) {
+            "--test" -> {
+                test()
+                break@forloop
+            }
+            else -> {
+                App()
+                break@forloop
+            }
         }
-        println("-----------------")
-        delay(1000)
     }
+    // if nothing is there -> App()
+    App()
 }
