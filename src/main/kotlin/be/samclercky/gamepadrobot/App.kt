@@ -1,16 +1,19 @@
 package be.samclercky.gamepadrobot
 
+import be.samclercky.gamepadrobot.input.Controller
 import be.samclercky.gamepadrobot.robot.Key
 import be.samclercky.gamepadrobot.robot.Robot
 import javax.swing.JFrame
 
 class App: JFrame() {
 
-    /*val minecraftGamepad = MinecraftGamepad()
+    val minecraftGamepad = MinecraftGamepad()
     val robot = Robot()
     val passedUnMappedBtn = Array<PassedUnMappedBtn>(minecraftGamepad.getUnMappedBtn().size, {
         PassedUnMappedBtn(minecraftGamepad.getUnMappedBtn()[it], false, "")
     })
+
+    val controller = Controller()
 
     init {
         createUI()
@@ -23,7 +26,7 @@ class App: JFrame() {
 
     fun produceEvents() {
         while (true) {
-            val controllers = ControllerEnvironment.getDefaultEnvironment().controllers
+            /*val controllers = ControllerEnvironment.getDefaultEnvironment().controllers
 
             if (controllers.size == 0) {
                 println("Geen controllers gevonden")
@@ -42,6 +45,18 @@ class App: JFrame() {
                     mapToMovement(gameEvent)
                 }
                 robot.updateMouse()
+            }*/
+            if (controller.firstControllerId == -1) {
+                println("Geen controllers gevonden")
+                println("Excecute in bash to see all found controllers: gamerobot --list-all")
+                System.exit(0)
+            }
+
+            val newData = controller.pollNewData()
+
+            for (data in newData) {
+                val gameEvent = GameEvent(false, data.value.toFloat(), data.key.toString())
+                mapToMovement(gameEvent)
             }
         }
     }
@@ -117,7 +132,7 @@ class App: JFrame() {
                 robot.keyPress(robot.KeyToKeyEvent(gameData.key))
             }
         }
-    }*/
+    }
 }
 
 data class GameEvent(val analog: Boolean, val value: Float, val btn: String)

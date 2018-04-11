@@ -7,7 +7,9 @@ import be.samclercky.gamepadrobot.utils.iterator
 import java.nio.ByteBuffer
 
 class Controller {
-    private var working = false
+    companion object {
+        private var working = false
+    }
 
     val joysticks = arrayOf(
             GLFW_JOYSTICK_1,
@@ -27,6 +29,8 @@ class Controller {
             GLFW_JOYSTICK_15,
             GLFW_JOYSTICK_16
     )
+
+    var prevData = Array<Int>(pollData().size, {0}) // default data
 
     val firstControllerName: String
         get() {
@@ -108,4 +112,32 @@ class Controller {
         }
         return results.toTypedArray()
     }
+
+    fun pollNewData(): Array<DiffEvents<Int>> {
+        val newData = pollData()
+        val diffData = getDiff<Int>(prevData, newData)
+        prevData = newData
+
+        return diffData
+    }
+
+    private fun <T> getDiff(oldData: Array<T>, newData: Array<T>): Array<DiffEvents<T>> {
+        var result: ArrayList<DiffEvents<T>> = arrayListOf()
+
+        if (oldData.size != newData.size && newData.size > 0) { // return data based on newData
+            for (i in 0..(newData.size-1)) {
+                result.add(DiffEvents(i, newData[i]))
+            }
+        } else {
+            for (i in 0..(oldData.size-1)) {
+                if (oldData[i] != newData[i]) {
+                    result.add(DiffEvents(i, newData[i]))
+                }
+            }
+        }
+
+        return result.toTypedArray()
+    }
 }
+
+data class DiffEvents<T>(val key: Int, val value: T)
