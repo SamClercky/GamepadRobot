@@ -4,12 +4,18 @@ import be.samclercky.gamepadrobot.input.Controller
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 
+/**
+ * List of all available options
+ */
 val cmdOptions = arrayOf(
         Option("--list-all", "Lists all recognized joysticks"),
         Option("--test", "Tests the first joystick by reading every second the data"),
         Option("--help", "Shows this menu")
 )
 
+/**
+ * Polls all data and shows it in the command line
+ */
 suspend fun test(){
     val c = Controller()
 
@@ -23,6 +29,9 @@ suspend fun test(){
     }
 }
 
+/**
+ * List all recognized controllers
+ */
 fun listAll() {
     val c = Controller()
     val joys = c.allControllerNames
@@ -33,6 +42,9 @@ fun listAll() {
     println()
 }
 
+/**
+ * List all availlable command options based on cmdOptions
+ */
 fun listOptions() {
     println("Options are:")
     for (cmd in cmdOptions) {
@@ -41,4 +53,7 @@ fun listOptions() {
     println()
 }
 
+/**
+ * Quick data-class to store the availlable command options
+ */
 data class Option(val name: String, val description: String)

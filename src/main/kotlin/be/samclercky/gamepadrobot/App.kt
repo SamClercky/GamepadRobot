@@ -5,26 +5,32 @@ import be.samclercky.gamepadrobot.robot.Key
 import be.samclercky.gamepadrobot.robot.Robot
 import javax.swing.JFrame
 
+/**
+ * Controls all the imput from the gamepad and sends commands to the keyboard and mouse
+ */
 class App: JFrame() {
 
-    val minecraftGamepad = MinecraftGamepad()
-    val robot = Robot()
-    val passedUnMappedBtn = Array<PassedUnMappedBtn>(minecraftGamepad.getUnMappedBtn().size, {
+    private val minecraftGamepad = MinecraftGamepad()
+    private val robot = Robot()
+    private val passedUnMappedBtn = Array<PassedUnMappedBtn>(minecraftGamepad.getUnMappedBtn().size, {
         PassedUnMappedBtn(minecraftGamepad.getUnMappedBtn()[it], false, "")
     })
 
-    val controller = Controller()
+    private val controller = Controller()
 
     init {
         createUI()
         produceEvents()
     }
 
-    fun createUI() {
+    private fun createUI() {
 
     }
 
-    fun produceEvents() {
+    /**
+     * Takes the events and starts the chain
+     */
+    private fun produceEvents() {
         while (true) {
             /*val controllers = ControllerEnvironment.getDefaultEnvironment().controllers
 
@@ -61,7 +67,11 @@ class App: JFrame() {
         }
     }
 
-    fun mapToMovement(gameEvent: GameEvent) {
+    /**
+     * Maps all the events to a Key that is used to send a command to keyboard and mouse
+     * @param gameEvent the event to map
+     */
+    private fun mapToMovement(gameEvent: GameEvent) {
         val data = gameEvent
         println(data)
         var finalBtn = data.btn
@@ -119,7 +129,11 @@ class App: JFrame() {
         excecuter(gameData)
     }
 
-    fun excecuter(gameData: GameData) {
+    /**
+     * Excecutes the data
+     * @param gameData Data to be excecuted
+     */
+    private fun excecuter(gameData: GameData) {
         println("${gameData.value}; ${gameData.key}")
         if (robot.isClick(gameData.key)) {
             robot.click(gameData.key)
@@ -135,6 +149,27 @@ class App: JFrame() {
     }
 }
 
+/**
+ * Transports the event data
+ * @param analog Is the clicked button an analog button
+ * @param value The value of the event
+ * @param btn The name of the event
+ */
 data class GameEvent(val analog: Boolean, val value: Float, val btn: String)
+
+/**
+ * Transports the mapped event data
+ * @param value The value of the command
+ * @param key The mapped name of the event
+ * @param originalKey The unmapped name of the event
+ * @param multiplyer Gives the speed of the control -> used for the speed of the mouse
+ */
 data class GameData(val value: Float, val key: Key, val originalKey: Key = key, val multiplyer: Float = 1f)
+
+/**
+ * Stores the unmapped data from the controller-class
+ * @param unMappedBtn The data of the unmapped event
+ * @param justPasted Wether if the event has just passed
+ * @param prevBtn The name of the last mapped event
+ */
 data class PassedUnMappedBtn(val unMappedBtn: UnMappedBtn, var justPasted: Boolean, var prevBtn: String)

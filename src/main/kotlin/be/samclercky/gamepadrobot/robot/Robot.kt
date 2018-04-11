@@ -6,26 +6,42 @@ import java.awt.Robot
 import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
 
+/**
+ * Interacts with the Robot-class from java.awt.*
+ */
 class Robot {
-    val robot = Robot()
-    val movingMouse = mutableListOf<GameData>()
+    private val robot = Robot()
+    private val movingMouse = mutableListOf<GameData>()
 
     init {
         robot.autoDelay = 40
         robot.isAutoWaitForIdle = true
     }
+
+    /**
+     * Generates a left mouse click
+     */
     fun leftClick() {
         robot.mousePress(InputEvent.BUTTON1_MASK)
         robot.delay(40)
         robot.mouseRelease(InputEvent.BUTTON1_MASK)
         robot.delay(40)
     }
+
+    /**
+     * Generates a right mouse click
+     */
     fun rightClick() {
         robot.mousePress(InputEvent.BUTTON3_MASK)
         robot.delay(40)
         robot.mouseRelease(InputEvent.BUTTON3_MASK)
         robot.delay(40)
     }
+
+    /**
+     * Types a string via the keyboard
+     * @param str String to write
+     */
     fun type(str: String) {
         for (character in str) {
             var code = character as Int
@@ -37,6 +53,11 @@ class Robot {
             robot.keyRelease(code)
         }
     }
+
+    /**
+     * Presses any key -> !IMPORTANT! Call always right after keyRelease(keyCode)
+     * @param key keycode of the key
+     */
     fun keyPress(key: Int) {
         try {
             robot.delay(40)
@@ -45,6 +66,11 @@ class Robot {
             println("Illegal argument: could not write keyCode: $key")
         }
     }
+
+    /**
+     * Releases a key
+     * @param key keycode of the key
+     */
     fun keyRelease(key: Int) {
         try {
             robot.delay(40)
@@ -53,6 +79,11 @@ class Robot {
             println("Illegal argument: could not write keyCode: $key")
         }
     }
+
+    /**
+     * Detects if the command is a mousemovement
+     * @param key Keycommand to inspect
+     */
     fun isMouseMovement(key: Key): Boolean {
         when(key) {
             Key.MOUSEMOVEX -> return true
@@ -60,6 +91,12 @@ class Robot {
             else -> return false
         }
     }
+
+    /**
+     * Moves the mouse relatively from the current place
+     * @param dx Relative x-position
+     * @param dy Relative y-position
+     */
     fun mouseMove(dx: Int, dy: Int) {
         val cPosition = MouseInfo.getPointerInfo().location
         try {
@@ -69,6 +106,11 @@ class Robot {
             println("Couldn't move mouse with these arguments: dx:$dx; dy:$dy")
         }
     }
+
+    /**
+     * Moves the mouse relatively from the current place
+     * @param gameData The data that describes the movement
+     */
     fun mouseMove(gameData: GameData) {
         if (isMouseMovement(gameData.key)) {
             when (gameData.key) {
@@ -77,6 +119,11 @@ class Robot {
             }
         }
     }
+
+    /**
+     * For longer movements, you can call this function -> !IMPORTANT! Call this function also with a 0 movement to stop it
+     * @param gameData The data that describes the movement
+     */
     fun pushMouseMovement(gameData: GameData) {
         for (data in movingMouse) {
             if (data.key == gameData.key) {
@@ -91,6 +138,10 @@ class Robot {
         }
         movingMouse.add(gameData) // not yet in movingMouse -> adding now
     }
+
+    /**
+     * For pushMouseMovement() to work, this function updates the current position of the mouse
+     */
     fun updateMouse() {
         for (data in movingMouse) {
             mouseMove(data)
@@ -98,6 +149,11 @@ class Robot {
         }
     }
 
+    /**
+     * Maps the Key to a keyCode
+     * @param key Key to be converted
+     * @return Corresponding keycode
+     */
     fun KeyToKeyEvent(key: Key): Int {
         when(key) {
             Key.A -> return KeyEvent.VK_A
@@ -144,6 +200,11 @@ class Robot {
         }
     }
 
+    /**
+     * Checks if the command is a key
+     * @param key The command that has to be checked
+     * @return True if it is a click-command
+     */
     fun isClick(key: Key): Boolean {
         when(key) {
             Key.MOUSELEFT -> return true
@@ -151,6 +212,11 @@ class Robot {
             else -> return false
         }
     }
+
+    /**
+     * Simplified version of all *click-functions
+     * @param key Command that has to be excecuted
+     */
     fun click(key: Key) {
         if (isClick(key)) {
             when(key) {
@@ -161,6 +227,9 @@ class Robot {
     }
 }
 
+/**
+ * All supported commands
+ */
 enum class Key {
     MOUSEMOVEX, MOUSEMOVEY, A, Z, E, R, T, Y, U, I, O, P, Q, S, D, F, G, H, J, K, L, M, W, X, C, V, B, N, SHIFT, CONTROL, F1, F2, F3, F4, F5, F6, F7, F8, F9, F0, SPACE,
     MOUSELEFT, MOUSERIGHT, ESC, NOTHING
