@@ -3,7 +3,14 @@ package be.samclercky.gamepadrobot
 import be.samclercky.gamepadrobot.input.Controller
 import be.samclercky.gamepadrobot.robot.Key
 import be.samclercky.gamepadrobot.robot.Robot
+import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.channels.ReceiveChannel
+import kotlinx.coroutines.experimental.channels.produce
+import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.withContext
 import javax.swing.JFrame
+import kotlin.coroutines.experimental.CoroutineContext
 
 /**
  * Controls all the imput from the gamepad and sends commands to the keyboard and mouse
@@ -20,7 +27,22 @@ class App: JFrame() {
 
     init {
         createUI()
-        produceEvents()
+        val events = produceEvents()
+        val keys = mapToMovement(events)
+        excecuter(keys, Robot.workContext)
+
+        launch {
+            while (isActive) {
+                withContext(Robot.workContext) {
+                    robot.updateMouse()
+                }
+                delay(5)
+            }
+        }
+
+        while (!events.isClosedForReceive || !keys.isClosedForReceive) {
+            // keep jvm alive
+        }
     }
 
     private fun createUI() {
@@ -30,28 +52,8 @@ class App: JFrame() {
     /**
      * Takes the events and starts the chain
      */
-    private fun produceEvents() {
+    private fun produceEvents() = produce<GameEvent> {
         while (true) {
-            /*val controllers = ControllerEnvironment.getDefaultEnvironment().controllers
-
-            if (controllers.size == 0) {
-                println("Geen controllers gevonden")
-                System.exit(0)
-            }
-            //println("Controller gevonden")
-            for (controller in controllers) {
-                controller.poll()
-
-                val queue = controller.eventQueue
-                val event = Event()
-
-                while (queue.getNextEvent(event)) {
-                    val comp = event.component
-                    val gameEvent = GameEvent(comp.isAnalog(), event.value, comp.name)
-                    mapToMovement(gameEvent)
-                }
-                robot.updateMouse()
-            }*/
             if (controller.firstControllerId == -1) {
                 println("Geen controllers gevonden")
                 println("Excecute in bash to see all found controllers: gamerobot --list-all")
@@ -62,10 +64,9 @@ class App: JFrame() {
 
             for (data in newData) {
                 val gameEvent = GameEvent(data.analog, data.value, data.key.toString())
-                mapToMovement(gameEvent)
+                //mapToMovement(gameEvent)
+                send(gameEvent)
             }
-
-            robot.updateMouse()
         }
     }
 
@@ -73,84 +74,88 @@ class App: JFrame() {
      * Maps all the events to a Key that is used to send a command to keyboard and mouse
      * @param gameEvent the event to map
      */
-    private fun mapToMovement(gameEvent: GameEvent) {
-        val data = gameEvent
-        println(data)
-        var finalBtn = data.btn
+    private fun mapToMovement(gameEvents: ReceiveChannel<GameEvent>) = produce<GameData> {
+        mainloop@ for (data in gameEvents) {
+            println(data)
+            var finalBtn = data.btn
 
-        for (passedBtn in passedUnMappedBtn) { // set other mapped buttons to 0
-            if (passedBtn.unMappedBtn.btn == data.btn && passedBtn.justPasted) {
-                for (value in passedBtn.unMappedBtn.values) {
-                    val id = passedBtn.unMappedBtn.values.indexOf(value)+1
-                    var resetBtn = passedBtn.unMappedBtn.btn
-                    if (id > 1) {
-                        resetBtn += " $id"
+            for (passedBtn in passedUnMappedBtn) { // set other mapped buttons to 0
+                if (passedBtn.unMappedBtn.btn == data.btn && passedBtn.justPasted) {
+                    for (value in passedBtn.unMappedBtn.values) {
+                        val id = passedBtn.unMappedBtn.values.indexOf(value)+1
+                        var resetBtn = passedBtn.unMappedBtn.btn
+                        if (id > 1) {
+                            resetBtn += " $id"
+                        }
+
+                        send(GameData(0, minecraftGamepad.getCode(resetBtn)))
                     }
-
-                    excecuter(GameData(0, minecraftGamepad.getCode(resetBtn)))
+                    passedBtn.justPasted = false
                 }
-                passedBtn.justPasted = false
             }
-        }
 
-        val unMappedBtn = minecraftGamepad.getUnMappedBtn()
-        for (btn in unMappedBtn) {
-            if (btn.btn == data.btn && finalBtn == data.btn) {
-                if (data.analog) {
-                    // turn mapped analog data to digital data
-                    if (data.value != 1 && data.value != -1 && data.value != 0) return
-                    if (data.value > 0) {
-                        finalBtn += " 2"
-                    }
-                } else {
-                    for (value in btn.values) {
-                        if (value == data.value) {
-                            val id = btn.values.indexOf(value)+1
-                            if (id > 1) {
-                                finalBtn += " $id"
+            val unMappedBtn = minecraftGamepad.getUnMappedBtn()
+            for (btn in unMappedBtn) {
+                if (btn.btn == data.btn && finalBtn == data.btn) {
+                    if (data.analog) {
+                        // turn mapped analog data to digital data
+                        if (data.value != 1 && data.value != -1 && data.value != 0) break@mainloop
+                        if (data.value > 0) {
+                            finalBtn += " 2"
+                        }
+                    } else {
+                        for (value in btn.values) {
+                            if (value == data.value) {
+                                val id = btn.values.indexOf(value)+1
+                                if (id > 1) {
+                                    finalBtn += " $id"
+                                }
                             }
                         }
                     }
-                }
 
-                // store the change
-                for (passedBtn in passedUnMappedBtn) {
-                    if (passedBtn.unMappedBtn.btn == data.btn) {
-                        passedBtn.justPasted = true
-                        passedBtn.prevBtn = finalBtn
+                    // store the change
+                    for (passedBtn in passedUnMappedBtn) {
+                        if (passedBtn.unMappedBtn.btn == data.btn) {
+                            passedBtn.justPasted = true
+                            passedBtn.prevBtn = finalBtn
+                        }
                     }
                 }
             }
-        }
-        // get maining
-        val key = minecraftGamepad.getCode(finalBtn)
-        println("$key: code: ${key.keyCode}")
-        println(passedUnMappedBtn)
+            // get maining
+            val key = minecraftGamepad.getCode(finalBtn)
+            println("$key: code: ${key.keyCode}")
+            println(passedUnMappedBtn)
 
-        // pack everything in GameData object
-        val gameData = GameData(data.value, key, multiplyer = minecraftGamepad.mouseSensitvity)
-        excecuter(gameData)
+            // pack everything in GameData object
+            val gameData = GameData(data.value, key, multiplyer = minecraftGamepad.mouseSensitvity)
+            send(gameData)
+        }
     }
 
     /**
      * Excecutes the data
      * @param gameData Data to be excecuted
+     * @param ctx Context where the coroutine should run on
      */
-    private fun excecuter(gameData: GameData) {
-        println("${gameData.value}; ${gameData.key}")
-        if (robot.isClick(gameData.key)) {
-            if (gameData.value == 0) {
-                robot.clickRelease(gameData.key)
+    private fun excecuter(gameDatas: ReceiveChannel<GameData>, ctx: CoroutineContext = CommonPool) = launch(ctx) {
+        for (gameData in gameDatas) {
+            println("${gameData.value}; ${gameData.key}")
+            if (robot.isClick(gameData.key)) {
+                if (gameData.value == 0) {
+                    robot.clickRelease(gameData.key)
+                } else {
+                    robot.clickPress(gameData.key)
+                }
+            } else if (robot.isMouseMovement(gameData.key)) {
+                robot.pushMouseMovement(gameData)
             } else {
-                robot.clickPress(gameData.key)
-            }
-        } else if (robot.isMouseMovement(gameData.key)) {
-            robot.pushMouseMovement(gameData)
-        } else {
-            if (gameData.value == 0) {
-                robot.keyRelease(gameData.key.keyCode)
-            } else {
-                robot.keyPress(gameData.key.keyCode)
+                if (gameData.value == 0) {
+                    robot.keyRelease(gameData.key.keyCode)
+                } else {
+                    robot.keyPress(gameData.key.keyCode)
+                }
             }
         }
     }

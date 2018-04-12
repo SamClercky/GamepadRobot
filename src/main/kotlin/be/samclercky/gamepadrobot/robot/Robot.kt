@@ -1,6 +1,7 @@
 package be.samclercky.gamepadrobot.robot
 
 import be.samclercky.gamepadrobot.GameData
+import kotlinx.coroutines.experimental.newSingleThreadContext
 import java.awt.MouseInfo
 import java.awt.Robot
 import java.awt.event.InputEvent
@@ -10,6 +11,11 @@ import java.awt.event.KeyEvent
  * Interacts with the Robot-class from java.awt.*
  */
 class Robot {
+
+    companion object {
+        val workContext = newSingleThreadContext("workContext")
+    }
+
     private val robot = Robot()
     private val movingMouse = mutableListOf<GameData>()
     private val pressedBtn: HashMap<Int, Boolean> by lazy {
