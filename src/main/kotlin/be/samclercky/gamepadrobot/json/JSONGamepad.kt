@@ -87,7 +87,7 @@ class JSONGamepad(val file: File) {
                 }
             }
 
-            println(json)
+            //println(json)
         } catch (ex: Exception) {
             ex.printStackTrace()
             System.exit(2)

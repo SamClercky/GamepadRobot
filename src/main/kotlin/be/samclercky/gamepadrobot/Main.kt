@@ -33,7 +33,17 @@ fun main(args: Array<String>) = runBlocking<Unit> {
             }
             "" -> break@forloop
             else -> {
-                App(JSONGamepad(File(arg)))
+                val file = File(arg)
+                if (file.exists()) {
+                    println("Inserted file: $arg")
+                    App(JSONGamepad(File(arg)))
+                }
+                else {
+                    println("Inserted file: ${File("").absoluteFile.absolutePath}/$arg")
+                    App(JSONGamepad(File(
+                            File("").absoluteFile.absolutePath + arg
+                    )))
+                }
                 break@forloop
             }
         }

@@ -77,7 +77,7 @@ class App(val gamepadConfig: JSONGamepad): JFrame() {
      */
     private fun mapToMovement(gameEvents: ReceiveChannel<GameEvent>) = produce<GameData> {
         mainloop@ for (data in gameEvents) {
-            println(data)
+            //println(data)
             var finalBtn = data.btn
 
             for (passedBtn in passedUnMappedBtn) { // set other mapped buttons to 0
@@ -126,8 +126,8 @@ class App(val gamepadConfig: JSONGamepad): JFrame() {
             }
             // get maining
             val key = gamepadConfig.getCode(finalBtn)
-            println("$key: code: ${key.keyCode}")
-            println(passedUnMappedBtn)
+            //println("$key: code: ${key.keyCode}")
+            //println(passedUnMappedBtn)
 
             // pack everything in GameData object
             val gameData = GameData(data.value, key, multiplyer = gamepadConfig.mouseSensitive)
@@ -142,7 +142,7 @@ class App(val gamepadConfig: JSONGamepad): JFrame() {
      */
     private fun excecuter(gameDatas: ReceiveChannel<GameData>, ctx: CoroutineContext = CommonPool) = launch(ctx) {
         for (gameData in gameDatas) {
-            println("${gameData.value}; ${gameData.key}")
+            //println("${gameData.value}; ${gameData.key}")
             if (robot.isClick(gameData.key)) {
                 if (gameData.value == 0) {
                     robot.clickRelease(gameData.key)

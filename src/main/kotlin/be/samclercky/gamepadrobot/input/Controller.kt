@@ -101,7 +101,7 @@ class Controller {
      */
     fun destroy() {
         glfwTerminate()
-        println("destroing gwfl")
+        println("GWFL terminated")
     }
 
     /**

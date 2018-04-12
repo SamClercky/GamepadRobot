@@ -184,7 +184,7 @@ class Robot {
     fun updateMouse() {
         for (data in movingMouse) {
             mouseMove(data)
-            println("mouse updated")
+            //println("mouse updated")
         }
     }
 
