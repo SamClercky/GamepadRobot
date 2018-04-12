@@ -1,0 +1,37 @@
+{
+  "buttons": [
+    {"key": "0", "value": "Q"},
+    {"key": "0 2", "value": "D"},
+    {"key": "1", "value": "Z"},
+    {"key": "1 2", "value": "S"},
+    {"key": "2", "value": "MOUSEMOVEX"},
+    {"key": "2 2", "value": "MOUSEMOVEX"},
+    {"key": "3", "value": "MOUSEMOVEY"},
+    {"key": "3 2", "value": "MOUSEMOVEY"},
+    {"key": "4", "value": "F6"},
+    {"key": "4 2", "value": "F7"},
+    {"key": "4 3", "value": "F8"},
+    {"key": "4 4", "value": "F5"},
+    {"key": "5", "value": "MOUSELEFT"},
+    {"key": "5 2", "value": "MOUSERIGHT"},
+    {"key": "5 3", "value": "SHIFT"},
+    {"key": "5 4", "value": "F9"},
+    {"key": "6", "value": "E"},
+    {"key": "6 2", "value": "ESC"},
+    {"key": "6 3", "value": "SPACE"},
+    {"key": "6 4", "value": "SPACE"},
+    {"key": "7", "value": "F2"},
+    {"key": "7 2", "value": "F1"},
+    {"key": "7 3", "value": "F4"},
+    {"key": "7 4", "value": "F3"}
+  ],
+  "unmappedBtn" : [
+    {"btn": "0", "values": [-1, 1]},
+    {"btn": "1", "values": [-1, 1]},
+    {"btn": "4", "values": [1, 256, 65536, 16777216]},
+    {"btn": "5", "values": [1, 256, 65536, 16777216]},
+    {"btn": "6", "values": [1, 256, 65536, 16777216]},
+    {"btn": "7", "values": [1, 256, 65536, 16777216]}
+  ],
+  "mouseSentivity": 50
+}

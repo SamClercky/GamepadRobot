@@ -1,6 +1,8 @@
 package be.samclercky.gamepadrobot
 
 import be.samclercky.gamepadrobot.input.Controller
+import be.samclercky.gamepadrobot.json.JSONGamepad
+import be.samclercky.gamepadrobot.json.UnMappedBtn
 import be.samclercky.gamepadrobot.robot.Key
 import be.samclercky.gamepadrobot.robot.Robot
 import kotlinx.coroutines.experimental.CommonPool
@@ -15,12 +17,11 @@ import kotlin.coroutines.experimental.CoroutineContext
 /**
  * Controls all the imput from the gamepad and sends commands to the keyboard and mouse
  */
-class App: JFrame() {
+class App(val gamepadConfig: JSONGamepad): JFrame() {
 
-    private val minecraftGamepad = MinecraftGamepad()
     private val robot = Robot()
-    private val passedUnMappedBtn = Array<PassedUnMappedBtn>(minecraftGamepad.getUnMappedBtn().size, {
-        PassedUnMappedBtn(minecraftGamepad.getUnMappedBtn()[it], false, "")
+    private val passedUnMappedBtn = Array<PassedUnMappedBtn>(gamepadConfig.unMappedBtn.size, {
+        PassedUnMappedBtn(gamepadConfig.unMappedBtn[it], false, "")
     })
 
     private val controller = Controller()
@@ -88,13 +89,13 @@ class App: JFrame() {
                             resetBtn += " $id"
                         }
 
-                        send(GameData(0, minecraftGamepad.getCode(resetBtn)))
+                        send(GameData(0, gamepadConfig.getCode(resetBtn)))
                     }
                     passedBtn.justPasted = false
                 }
             }
 
-            val unMappedBtn = minecraftGamepad.getUnMappedBtn()
+            val unMappedBtn = gamepadConfig.unMappedBtn
             for (btn in unMappedBtn) {
                 if (btn.btn == data.btn && finalBtn == data.btn) {
                     if (data.analog) {
@@ -124,12 +125,12 @@ class App: JFrame() {
                 }
             }
             // get maining
-            val key = minecraftGamepad.getCode(finalBtn)
+            val key = gamepadConfig.getCode(finalBtn)
             println("$key: code: ${key.keyCode}")
             println(passedUnMappedBtn)
 
             // pack everything in GameData object
-            val gameData = GameData(data.value, key, multiplyer = minecraftGamepad.mouseSensitvity)
+            val gameData = GameData(data.value, key, multiplyer = gamepadConfig.mouseSensitive)
             send(gameData)
         }
     }
@@ -176,7 +177,7 @@ data class GameEvent(val analog: Boolean, val value: Int, val btn: String)
  * @param originalKey The unmapped name of the event
  * @param multiplyer Gives the speed of the control -> used for the speed of the mouse
  */
-data class GameData(val value: Int, val key: Key, val originalKey: Key = key, val multiplyer: Float = 1f)
+data class GameData(val value: Int, val key: Key, val originalKey: Key = key, val multiplyer: Int = 1)
 
 /**
  * Stores the unmapped data from the controller-class

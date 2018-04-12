@@ -3,6 +3,7 @@ package be.samclercky.gamepadrobot
 import be.samclercky.gamepadrobot.robot.Key
 
 // TODO: should be replaced later to JSON
+@Deprecated("Should be changed to JSONGamepad()")
 class MinecraftGamepad {
 
     val mouseSensitvity: Float = 50f
@@ -50,4 +51,5 @@ class MinecraftGamepad {
     }
 }
 
+@Deprecated("Use the one in the json package")
 data class UnMappedBtn(val btn: String, val values: Array<Int>)

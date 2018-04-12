@@ -1,9 +1,11 @@
 package be.samclercky.gamepadrobot
 
 import be.samclercky.gamepadrobot.input.Controller
+import be.samclercky.gamepadrobot.json.JSONGamepad
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.runBlocking
+import java.io.File
 
 /**
  * Stores the current version of the program
@@ -29,12 +31,14 @@ fun main(args: Array<String>) = runBlocking<Unit> {
                 listOptions()
                 break@forloop
             }
+            "" -> break@forloop
             else -> {
-                App()
+                App(JSONGamepad(File(arg)))
                 break@forloop
             }
         }
     }
-    // if nothing is there -> App()
-    App()
+    // if nothing is there -> Show error
+    println("Invalid option")
+    listOptions()
 }
