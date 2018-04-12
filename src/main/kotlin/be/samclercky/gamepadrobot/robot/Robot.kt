@@ -12,6 +12,15 @@ import java.awt.event.KeyEvent
 class Robot {
     private val robot = Robot()
     private val movingMouse = mutableListOf<GameData>()
+    private val pressedBtn: HashMap<Int, Boolean> by lazy {
+        val result = hashMapOf<Int, Boolean>()
+
+        for (key in Key.values()) {
+            result.put(key.keyCode, false)
+        }
+
+        result
+    }
 
     init {
         robot.autoDelay = 40
@@ -19,23 +28,43 @@ class Robot {
     }
 
     /**
-     * Generates a left mouse click
+     * Presses the left mouse button
      */
-    fun leftClick() {
+    fun leftClickPress() {
+        if (pressedBtn.get(Key.MOUSELEFT.keyCode) == true) return
+        robot.delay(40)
         robot.mousePress(InputEvent.BUTTON1_MASK)
-        robot.delay(40)
-        robot.mouseRelease(InputEvent.BUTTON1_MASK)
-        robot.delay(40)
+        pressedBtn.set(Key.MOUSELEFT.keyCode, true)
     }
 
     /**
-     * Generates a right mouse click
+     * Releases the left mouse button
      */
-    fun rightClick() {
+    fun leftClickRelease() {
+        if (!(pressedBtn.get(Key.MOUSELEFT.keyCode) == true)) return // only release when the key is pressed
+        robot.delay(40)
+        robot.mouseRelease(InputEvent.BUTTON1_MASK)
+        pressedBtn.set(Key.MOUSELEFT.keyCode, false)
+    }
+
+    /**
+     * Presses the right mouse button
+     */
+    fun rightClickPress() {
+        if (pressedBtn.get(Key.MOUSERIGHT.keyCode) ?: true) return
+        robot.delay(40)
         robot.mousePress(InputEvent.BUTTON3_MASK)
+        pressedBtn.set(Key.MOUSERIGHT.keyCode, true)
+    }
+
+    /**
+     * Releases the right mouse button
+     */
+    fun rightClickRelease() {
+        if (!(pressedBtn.get(Key.MOUSERIGHT.keyCode) ?: true)) return // only release when the key is pressed
         robot.delay(40)
         robot.mouseRelease(InputEvent.BUTTON3_MASK)
-        robot.delay(40)
+        pressedBtn.set(Key.MOUSERIGHT.keyCode, false)
     }
 
     /**
@@ -59,12 +88,14 @@ class Robot {
      * @param key keycode of the key
      */
     fun keyPress(key: Int) {
+        if (pressedBtn.get(key) ?: true) return // The key pressed, so should not be pressed again
         try {
             robot.delay(40)
             robot.keyPress(key)
         } catch (ex: IllegalArgumentException) {
             println("Illegal argument: could not write keyCode: $key")
         }
+        pressedBtn.set(key, true)
     }
 
     /**
@@ -72,12 +103,14 @@ class Robot {
      * @param key keycode of the key
      */
     fun keyRelease(key: Int) {
+        if (!(pressedBtn.get(key) ?: true)) return
         try {
             robot.delay(40)
             robot.keyRelease(key)
         } catch (ex:IllegalArgumentException) {
             println("Illegal argument: could not write keyCode: $key")
         }
+        pressedBtn.set(key, false)
     }
 
     /**
@@ -127,7 +160,7 @@ class Robot {
     fun pushMouseMovement(gameData: GameData) {
         for (data in movingMouse) {
             if (data.key == gameData.key) {
-                if (gameData.value == 0f) {
+                if (gameData.value == 0) {
                     movingMouse.remove(data)
                 } else {
                     movingMouse.remove(data)
@@ -154,51 +187,8 @@ class Robot {
      * @param key Key to be converted
      * @return Corresponding keycode
      */
-    fun KeyToKeyEvent(key: Key): Int {
-        when(key) {
-            Key.A -> return KeyEvent.VK_A
-            Key.Z -> return KeyEvent.VK_Z
-            Key.E -> return KeyEvent.VK_E
-            Key.R -> return KeyEvent.VK_R
-            Key.T -> return KeyEvent.VK_T
-            Key.Y -> return KeyEvent.VK_Y
-            Key.U -> return KeyEvent.VK_U
-            Key.I -> return KeyEvent.VK_I
-            Key.O -> return KeyEvent.VK_O
-            Key.P -> return KeyEvent.VK_P
-            Key.Q -> return KeyEvent.VK_Q
-            Key.S -> return KeyEvent.VK_S
-            Key.D -> return KeyEvent.VK_D
-            Key.F -> return KeyEvent.VK_F
-            Key.G -> return KeyEvent.VK_G
-            Key.H -> return KeyEvent.VK_H
-            Key.J -> return KeyEvent.VK_J
-            Key.K -> return KeyEvent.VK_K
-            Key.L -> return KeyEvent.VK_L
-            Key.M -> return KeyEvent.VK_M
-            Key.W -> return KeyEvent.VK_W
-            Key.X -> return KeyEvent.VK_X
-            Key.C -> return KeyEvent.VK_C
-            Key.V -> return KeyEvent.VK_V
-            Key.B -> return KeyEvent.VK_B
-            Key.N -> return KeyEvent.VK_N
-            Key.SHIFT -> return KeyEvent.VK_SHIFT
-            Key.CONTROL -> return KeyEvent.VK_CONTROL
-            Key.F1 -> return KeyEvent.VK_1
-            Key.F2 -> return KeyEvent.VK_2
-            Key.F3 -> return KeyEvent.VK_3
-            Key.F4 -> return KeyEvent.VK_4
-            Key.F5 -> return KeyEvent.VK_5
-            Key.F6 -> return KeyEvent.VK_6
-            Key.F7 -> return KeyEvent.VK_7
-            Key.F8 -> return KeyEvent.VK_8
-            Key.F9 -> return KeyEvent.VK_9
-            Key.F0 -> return KeyEvent.VK_0
-            Key.SPACE -> return KeyEvent.VK_SPACE
-            Key.ESC -> return KeyEvent.VK_ESCAPE
-            else -> return KeyEvent.VK_UNDEFINED
-        }
-    }
+    @Deprecated("Use keyCode-property of Key instead")
+    fun KeyToKeyEvent(key: Key): Int = key.keyCode
 
     /**
      * Checks if the command is a key
@@ -220,8 +210,38 @@ class Robot {
     fun click(key: Key) {
         if (isClick(key)) {
             when(key) {
-                Key.MOUSERIGHT -> rightClick()
-                Key.MOUSELEFT -> leftClick()
+                Key.MOUSERIGHT -> {
+                    rightClickPress()
+                    rightClickRelease()
+                }
+                Key.MOUSELEFT -> {
+                    leftClickPress()
+                    leftClickRelease()
+                }
+            }
+        }
+    }
+    fun clickPress(key: Key) {
+        if (isClick(key)) {
+            when(key) {
+                Key.MOUSERIGHT -> {
+                    rightClickPress()
+                }
+                Key.MOUSELEFT -> {
+                    leftClickPress()
+                }
+            }
+        }
+    }
+    fun clickRelease(key: Key) {
+        if (isClick(key)) {
+            when(key) {
+                Key.MOUSERIGHT -> {
+                    rightClickRelease()
+                }
+                Key.MOUSELEFT -> {
+                    leftClickRelease()
+                }
             }
         }
     }
@@ -230,7 +250,50 @@ class Robot {
 /**
  * All supported commands
  */
-enum class Key {
-    MOUSEMOVEX, MOUSEMOVEY, A, Z, E, R, T, Y, U, I, O, P, Q, S, D, F, G, H, J, K, L, M, W, X, C, V, B, N, SHIFT, CONTROL, F1, F2, F3, F4, F5, F6, F7, F8, F9, F0, SPACE,
-    MOUSELEFT, MOUSERIGHT, ESC, NOTHING
+enum class Key(val keyCode: Int) {
+    MOUSEMOVEX(-1),
+    MOUSEMOVEY(-2),
+    MOUSELEFT(-3),
+    MOUSERIGHT(-4),
+    A(KeyEvent.VK_A),
+    Z(KeyEvent.VK_Z),
+    E(KeyEvent.VK_E),
+    R(KeyEvent.VK_R),
+    T(KeyEvent.VK_T),
+    Y(KeyEvent.VK_Y),
+    U(KeyEvent.VK_U),
+    I(KeyEvent.VK_I),
+    O(KeyEvent.VK_O),
+    P(KeyEvent.VK_P),
+    Q(KeyEvent.VK_Q),
+    S(KeyEvent.VK_S),
+    D(KeyEvent.VK_D),
+    F(KeyEvent.VK_F),
+    G(KeyEvent.VK_G),
+    H(KeyEvent.VK_H),
+    J(KeyEvent.VK_J),
+    K(KeyEvent.VK_K),
+    L(KeyEvent.VK_L),
+    M(KeyEvent.VK_M),
+    W(KeyEvent.VK_W),
+    X(KeyEvent.VK_X),
+    C(KeyEvent.VK_C),
+    V(KeyEvent.VK_V),
+    B(KeyEvent.VK_B),
+    N(KeyEvent.VK_N),
+    SHIFT(KeyEvent.VK_SHIFT),
+    CONTROL(KeyEvent.VK_CONTROL),
+    F1(KeyEvent.VK_1),
+    F2(KeyEvent.VK_2),
+    F3(KeyEvent.VK_3),
+    F4(KeyEvent.VK_4),
+    F5(KeyEvent.VK_5),
+    F6(KeyEvent.VK_6),
+    F7(KeyEvent.VK_7),
+    F8(KeyEvent.VK_8),
+    F9(KeyEvent.VK_9),
+    F0(KeyEvent.VK_0),
+    SPACE(KeyEvent.VK_SPACE),
+    ESC(KeyEvent.VK_ESCAPE),
+    NOTHING(KeyEvent.VK_UNDEFINED)
 }

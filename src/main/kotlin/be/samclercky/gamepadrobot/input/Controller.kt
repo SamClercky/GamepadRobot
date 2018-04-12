@@ -4,7 +4,6 @@ import org.lwjgl.glfw.GLFW.*
 
 import be.samclercky.gamepadrobot.utils.iterator
 
-
 /**
  * Helper class with the lwjgl gamepad
  */
@@ -32,7 +31,7 @@ class Controller {
             GLFW_JOYSTICK_16
     )
 
-    private var prevData = Array<Int>(pollData().size, {0}) // default data
+    private var prevData = Array<Event<Int>>(pollData().size, {Event(it, 0)}) // default data
 
     /**
      * Gives the name of the first recognized controller
@@ -108,19 +107,23 @@ class Controller {
     /**
      * Gives back an array of all new data
      */
-    fun pollData(): Array<Int> {
-        val results: ArrayList<Int> = arrayListOf()
+    fun pollData(): Array<Event<Int>> {
+        val results: ArrayList<Event<Int>> = arrayListOf()
 
         glfwPollEvents()
         val joys = glfwGetJoystickAxes(firstControllerId)
         val btns = glfwGetJoystickButtons(firstControllerId)
 
         if (joys != null && btns != null) {
+            var index = 0
             for (joy in joys) {
-                results.add(joy)
+                results.add(Event(index, joy, true))
+                index++
             }
+            index = 0
             for (btn in btns) {
-                results.add(btn)
+                results.add(Event(index, btn))
+                index++
             }
         }
         return results.toTypedArray()
@@ -129,7 +132,7 @@ class Controller {
     /**
      * Gives back an array of all data whitout the unchanged data from the previous call
      */
-    fun pollNewData(): Array<DiffEvents<Int>> {
+    fun pollNewData(): Array<Event<Int>> {
         val newData = pollData()
         val diffData = getDiff<Int>(prevData, newData)
         prevData = newData
@@ -143,17 +146,17 @@ class Controller {
      * @param newData The newest data
      * @return All the differences between oldData and newData. If the size of both arrays aren't equal, the data is equal to the newData
      */
-    private fun <T> getDiff(oldData: Array<T>, newData: Array<T>): Array<DiffEvents<T>> {
-        var result: ArrayList<DiffEvents<T>> = arrayListOf()
+    private fun <T> getDiff(oldData: Array<Event<T>>, newData: Array<Event<T>>): Array<Event<T>> {
+        var result: ArrayList<Event<T>> = arrayListOf()
 
         if (oldData.size != newData.size && newData.size > 0) { // return data based on newData
             for (i in 0..(newData.size-1)) {
-                result.add(DiffEvents(i, newData[i]))
+                result.add(Event(i, newData[i].value, newData[i].analog))
             }
         } else {
             for (i in 0..(oldData.size-1)) {
                 if (oldData[i] != newData[i]) {
-                    result.add(DiffEvents(i, newData[i]))
+                    result.add(Event(i, newData[i].value, newData[i].analog))
                 }
             }
         }
@@ -166,4 +169,4 @@ class Controller {
  * @param key Position in incoming array-data (starting with 0)
  * @param value The value of the data
  */
-data class DiffEvents<T>(val key: Int, val value: T)
+data class Event<T>(val key: Int, val value: T, val analog: Boolean = false)

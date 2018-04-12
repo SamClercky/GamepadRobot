@@ -61,9 +61,11 @@ class App: JFrame() {
             val newData = controller.pollNewData()
 
             for (data in newData) {
-                val gameEvent = GameEvent(false, data.value.toFloat(), data.key.toString())
+                val gameEvent = GameEvent(data.analog, data.value, data.key.toString())
                 mapToMovement(gameEvent)
             }
+
+            robot.updateMouse()
         }
     }
 
@@ -76,7 +78,7 @@ class App: JFrame() {
         println(data)
         var finalBtn = data.btn
 
-        for (passedBtn in passedUnMappedBtn) {
+        for (passedBtn in passedUnMappedBtn) { // set other mapped buttons to 0
             if (passedBtn.unMappedBtn.btn == data.btn && passedBtn.justPasted) {
                 for (value in passedBtn.unMappedBtn.values) {
                     val id = passedBtn.unMappedBtn.values.indexOf(value)+1
@@ -84,7 +86,8 @@ class App: JFrame() {
                     if (id > 1) {
                         resetBtn += " $id"
                     }
-                    excecuter(GameData(0f, minecraftGamepad.getCode(resetBtn)))
+
+                    excecuter(GameData(0, minecraftGamepad.getCode(resetBtn)))
                 }
                 passedBtn.justPasted = false
             }
@@ -95,7 +98,7 @@ class App: JFrame() {
             if (btn.btn == data.btn && finalBtn == data.btn) {
                 if (data.analog) {
                     // turn mapped analog data to digital data
-                    if (data.value != 1f && data.value != -1f && data.value != 0f) return
+                    if (data.value != 1 && data.value != -1 && data.value != 0) return
                     if (data.value > 0) {
                         finalBtn += " 2"
                     }
@@ -121,7 +124,7 @@ class App: JFrame() {
         }
         // get maining
         val key = minecraftGamepad.getCode(finalBtn)
-        println("$key: code: ${robot.KeyToKeyEvent(key)}")
+        println("$key: code: ${key.keyCode}")
         println(passedUnMappedBtn)
 
         // pack everything in GameData object
@@ -136,14 +139,18 @@ class App: JFrame() {
     private fun excecuter(gameData: GameData) {
         println("${gameData.value}; ${gameData.key}")
         if (robot.isClick(gameData.key)) {
-            robot.click(gameData.key)
+            if (gameData.value == 0) {
+                robot.clickRelease(gameData.key)
+            } else {
+                robot.clickPress(gameData.key)
+            }
         } else if (robot.isMouseMovement(gameData.key)) {
             robot.pushMouseMovement(gameData)
         } else {
-            if (gameData.value == 0f) {
-                robot.keyRelease(robot.KeyToKeyEvent(gameData.key))
+            if (gameData.value == 0) {
+                robot.keyRelease(gameData.key.keyCode)
             } else {
-                robot.keyPress(robot.KeyToKeyEvent(gameData.key))
+                robot.keyPress(gameData.key.keyCode)
             }
         }
     }
@@ -155,7 +162,7 @@ class App: JFrame() {
  * @param value The value of the event
  * @param btn The name of the event
  */
-data class GameEvent(val analog: Boolean, val value: Float, val btn: String)
+data class GameEvent(val analog: Boolean, val value: Int, val btn: String)
 
 /**
  * Transports the mapped event data
@@ -164,7 +171,7 @@ data class GameEvent(val analog: Boolean, val value: Float, val btn: String)
  * @param originalKey The unmapped name of the event
  * @param multiplyer Gives the speed of the control -> used for the speed of the mouse
  */
-data class GameData(val value: Float, val key: Key, val originalKey: Key = key, val multiplyer: Float = 1f)
+data class GameData(val value: Int, val key: Key, val originalKey: Key = key, val multiplyer: Float = 1f)
 
 /**
  * Stores the unmapped data from the controller-class
